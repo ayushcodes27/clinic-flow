@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: clinicflow
+  datasource:
+    url: jdbc:postgresql://localhost:5432/clinicflow
+    username: clinic_user
+    password: clinic_password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
+  flyway:
+    enabled: true
+    url: jdbc:postgresql://localhost:5432/clinicflow
+    user: clinic_user
+    password: clinic_password
+    baseline-on-migrate: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  expiration: 86400000 # 1 day in milliseconds
+  refresh-expiration: 604800000 # 7 days in milliseconds

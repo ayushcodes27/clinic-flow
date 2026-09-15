@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: clinicflow-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: clinicflow
+      POSTGRES_USER: clinic_user
+      POSTGRES_PASSWORD: clinic_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: clinicflow-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
