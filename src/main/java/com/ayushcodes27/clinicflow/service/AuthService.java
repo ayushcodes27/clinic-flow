@@ -63,4 +63,23 @@ public class AuthService {
                 .refreshToken(refreshToken)
                 .build();
     }
+
+    public AuthResponse refresh(com.ayushcodes27.clinicflow.dto.RefreshRequest request) {
+        String refreshToken = request.getRefreshToken();
+        String userEmail = jwtService.extractUsername(refreshToken);
+        
+        if (userEmail != null) {
+            var user = repository.findByEmail(userEmail)
+                    .orElseThrow();
+            if (jwtService.isTokenValid(refreshToken, user)) {
+                var extraClaims = Map.<String, Object>of("userType", user.getUserType());
+                var accessToken = jwtService.generateToken(extraClaims, user);
+                return AuthResponse.builder()
+                        .accessToken(accessToken)
+                        .refreshToken(refreshToken)
+                        .build();
+            }
+        }
+        throw new RuntimeException("Invalid refresh token");
+    }
 }

@@ -32,4 +32,11 @@ public class AuthController {
     ) {
         return ResponseEntity.ok(service.login(request));
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refresh(
+            @Valid @RequestBody com.ayushcodes27.clinicflow.dto.RefreshRequest request
+    ) {
+        return ResponseEntity.ok(service.refresh(request));
+    }
 }
