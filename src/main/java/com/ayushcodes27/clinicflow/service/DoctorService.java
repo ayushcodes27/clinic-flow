@@ -63,6 +63,7 @@ public class DoctorService {
     }
 
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = "available_slots", allEntries = true)
     public void generateSlots(UUID doctorId, GenerateSlotsRequest request) {
         Doctor doctor = doctorRepo.findById(doctorId).orElseThrow();
         List<DoctorSchedule> schedules = scheduleRepo.findByDoctorId(doctorId);
