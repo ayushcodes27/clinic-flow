@@ -15,6 +15,7 @@ public class QueueService {
 
     private final QueueEntryRepository queueRepo;
     private final AppointmentRepository appointmentRepo;
+    private final NotificationService notificationService;
 
     @Transactional
     public void callNextPatient(UUID doctorId) {
@@ -42,5 +43,8 @@ public class QueueService {
                     appt.setStatus("IN_CONSULTATION");
                     appointmentRepo.save(appt);
                 });
+
+        // Push live queue update to all watchers
+        notificationService.pushQueueUpdate(doctorId);
     }
 }

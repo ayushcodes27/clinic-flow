@@ -1,6 +1,20 @@
-version: '3.8'
-
 services:
+  app:
+    build: .
+    container_name: clinicflow-app
+    ports:
+      - "8081:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/clinicflow
+      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/clinicflow
+      SPRING_DATASOURCE_USERNAME: clinic_user
+      SPRING_DATASOURCE_PASSWORD: clinic_password
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+    depends_on:
+      - postgres
+      - redis
+
   postgres:
     image: postgres:15-alpine
     container_name: clinicflow-postgres

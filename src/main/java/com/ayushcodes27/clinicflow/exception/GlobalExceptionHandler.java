@@ -12,14 +12,26 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
-    public ResponseEntity<Map<String, String>> handleOptimisticLockingFailure(ObjectOptimisticLockingFailureException ex) {
+    public ResponseEntity<Map<String, Object>> handleOptimisticLockingFailure(ObjectOptimisticLockingFailureException ex, jakarta.servlet.http.HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(Map.of("error", "The appointment slot was booked by someone else. Please try another slot."));
+                .body(Map.of(
+                        "timestamp", java.time.Instant.now().toString(),
+                        "status", 409,
+                        "error", "CONFLICT",
+                        "message", "This slot was just booked by another patient. Please select a different slot.",
+                        "path", request.getRequestURI()
+                ));
     }
     
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
+    public ResponseEntity<Map<String, Object>> handleRuntimeException(RuntimeException ex, jakarta.servlet.http.HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", ex.getMessage()));
+                .body(Map.of(
+                        "timestamp", java.time.Instant.now().toString(),
+                        "status", 400,
+                        "error", "BAD_REQUEST",
+                        "message", ex.getMessage(),
+                        "path", request.getRequestURI()
+                ));
     }
 }

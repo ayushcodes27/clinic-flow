@@ -26,6 +26,7 @@ public class AppointmentService {
     private final DoctorRepository doctorRepo;
     private final com.ayushcodes27.clinicflow.repository.QueueEntryRepository queueRepo;
     private final com.ayushcodes27.clinicflow.service.AppointmentSlotService slotService;
+    private final NotificationService notificationService;
 
     @Transactional
     public void bookAppointment(BookAppointmentRequest request) {
@@ -82,6 +83,9 @@ public class AppointmentService {
                 .status("WAITING")
                 .build();
         queueRepo.save(queueEntry);
+
+        // Push live queue update to all watchers
+        notificationService.pushQueueUpdate(appointment.getDoctor().getId());
     }
 
     @Transactional
