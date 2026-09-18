@@ -12,6 +12,18 @@ ClinicFlow is a high-performance backend system built for modern clinics to mana
 - **Role-Based Security**: Fine-grained JWT authentication controlling access at the endpoint and method levels (ADMIN, DOCTOR, PATIENT, RECEPTIONIST).
 - **Interactive API Docs**: Fully configured Swagger UI (`/swagger-ui.html`) mapping out every endpoint with schema validation.
 
+## Screenshots
+
+### Patient Portal
+| Real-Time Queue Tracker | Interactive Slot Booking |
+|:---:|:---:|
+| ![Patient Queue Tracker](frontend/ss/patient1.png) | ![Interactive Slot Booking](frontend/ss/patient2.png) |
+
+### Clinic Operations & Administration
+| Doctor Consultation Desk | Missed Appointments (ShedLock) & Audit Logs |
+|:---:|:---:|
+| ![Doctor Consultation Queue](frontend/ss/doctor1.png) | ![Admin No-Shows Dashboard](frontend/ss/admin2.png) |
+
 ## Architecture
 
 ClinicFlow is containerized for seamless deployment. The architecture utilizes:
