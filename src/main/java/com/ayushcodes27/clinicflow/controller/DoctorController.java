@@ -46,4 +46,16 @@ public class DoctorController {
         service.generateSlots(doctorId, request);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/doctors")
+    public ResponseEntity<java.util.List<com.ayushcodes27.clinicflow.dto.DoctorDto>> getAllDoctors() {
+        return ResponseEntity.ok(service.getAllDoctors());
+    }
+
+    @GetMapping("/doctors/{doctorId}/schedules")
+    public ResponseEntity<java.util.List<com.ayushcodes27.clinicflow.dto.DoctorScheduleDto>> getDoctorSchedules(
+            @PathVariable UUID doctorId
+    ) {
+        return ResponseEntity.ok(service.getDoctorSchedules(doctorId));
+    }
 }

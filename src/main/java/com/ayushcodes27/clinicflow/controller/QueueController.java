@@ -18,6 +18,12 @@ public class QueueController {
 
     private final QueueService service;
 
+    @Operation(summary = "Get Queue State", description = "Retrieves the current queue state for a doctor")
+    @GetMapping("/{doctorId}")
+    public ResponseEntity<com.ayushcodes27.clinicflow.dto.QueueStateDto> getQueueState(@PathVariable UUID doctorId) {
+        return ResponseEntity.ok(service.getQueueState(doctorId));
+    }
+
     @Operation(summary = "Call Next Patient", description = "Calls the next waiting patient in the doctor's queue")
     @PostMapping("/doctors/{doctorId}/next")
     public ResponseEntity<Void> callNextPatient(@PathVariable UUID doctorId) {

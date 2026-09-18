@@ -17,7 +17,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AppointmentSlot {
+public class AppointmentSlot implements java.io.Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

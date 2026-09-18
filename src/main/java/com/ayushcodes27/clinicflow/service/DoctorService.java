@@ -102,4 +102,22 @@ public class DoctorService {
             current = current.plusDays(1);
         }
     }
+
+    public List<com.ayushcodes27.clinicflow.dto.DoctorDto> getAllDoctors() {
+        return doctorRepo.findAll().stream().map(d -> com.ayushcodes27.clinicflow.dto.DoctorDto.builder()
+                .id(d.getId())
+                .fullName(d.getUser().getFullName())
+                .specialization(d.getSpecialization())
+                .build()).toList();
+    }
+
+    public List<com.ayushcodes27.clinicflow.dto.DoctorScheduleDto> getDoctorSchedules(UUID doctorId) {
+        return scheduleRepo.findByDoctorId(doctorId).stream().map(s -> com.ayushcodes27.clinicflow.dto.DoctorScheduleDto.builder()
+                .id(s.getId())
+                .dayOfWeek(s.getDayOfWeek())
+                .startTime(s.getStartTime())
+                .endTime(s.getEndTime())
+                .consultationDurationMinutes(s.getDoctor().getConsultationMinutes())
+                .build()).toList();
+    }
 }

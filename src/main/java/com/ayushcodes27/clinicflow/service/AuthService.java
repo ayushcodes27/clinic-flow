@@ -41,6 +41,9 @@ public class AuthService {
         return AuthResponse.builder()
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken)
+                .fullName(user.getFullName())
+                .userType(user.getUserType())
+                .id(user.getId().toString())
                 .build();
     }
 
@@ -61,6 +64,9 @@ public class AuthService {
         return AuthResponse.builder()
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken)
+                .fullName(user.getFullName())
+                .userType(user.getUserType())
+                .id(user.getId().toString())
                 .build();
     }
 
@@ -77,6 +83,9 @@ public class AuthService {
                 return AuthResponse.builder()
                         .accessToken(accessToken)
                         .refreshToken(refreshToken)
+                        .fullName(user.getFullName())
+                        .userType(user.getUserType())
+                        .id(user.getId().toString())
                         .build();
             }
         }

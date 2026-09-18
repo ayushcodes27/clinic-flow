@@ -15,6 +15,7 @@ public class QueueEntryDto {
     private UUID id;
     private UUID appointmentId;
     private UUID patientId;
+    private String patientName;
     private int position;
     private String status;
 }

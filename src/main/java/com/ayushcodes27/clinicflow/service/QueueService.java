@@ -47,4 +47,9 @@ public class QueueService {
         // Push live queue update to all watchers
         notificationService.pushQueueUpdate(doctorId);
     }
+
+    @Transactional(readOnly = true)
+    public com.ayushcodes27.clinicflow.dto.QueueStateDto getQueueState(UUID doctorId) {
+        return notificationService.getQueueState(doctorId);
+    }
 }

@@ -21,4 +21,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
         AND (s.slot_date + s.start_time) < :cutoff
     """, nativeQuery = true)
     List<Appointment> findNoShowCandidates(@Param("status") String status, @Param("cutoff") Instant cutoff);
+
+    List<Appointment> findByStatus(String status);
 }

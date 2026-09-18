@@ -32,4 +32,9 @@ public class AppointmentController {
         service.cancel(id);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping
+    public ResponseEntity<java.util.List<com.ayushcodes27.clinicflow.entity.Appointment>> getAppointments(@RequestParam(required = false) String status) {
+        return ResponseEntity.ok(service.getAppointments(status));
+    }
 }

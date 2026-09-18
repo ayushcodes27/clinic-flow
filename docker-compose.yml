@@ -35,5 +35,17 @@ services:
       - "6379:6379"
     restart: unless-stopped
 
+  frontend:
+    image: node:22
+    container_name: clinicflow-frontend
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    command: npm run dev -- --host
+    ports:
+      - "5173:5173"
+    depends_on:
+      - app
+
 volumes:
   postgres_data:

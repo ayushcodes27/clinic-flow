@@ -22,17 +22,20 @@ public class NotificationService {
     private final SimpMessagingTemplate messagingTemplate;
     private final QueueEntryRepository queueRepo;
 
-    public void pushQueueUpdate(UUID doctorId) {
+    public QueueStateDto getQueueState(UUID doctorId) {
         List<QueueEntry> waiting = queueRepo.findByDoctorIdAndStatusOrderByPositionAsc(doctorId, "WAITING");
         Optional<QueueEntry> current = queueRepo.findFirstByDoctorIdAndStatusOrderByPositionAsc(doctorId, "IN_CONSULTATION");
 
-        QueueStateDto state = QueueStateDto.builder()
+        return QueueStateDto.builder()
                 .doctorId(doctorId)
                 .currentPatient(current.map(this::mapToDto).orElse(null))
                 .waitingCount(waiting.size())
                 .queue(waiting.stream().map(this::mapToDto).collect(Collectors.toList()))
                 .build();
+    }
 
+    public void pushQueueUpdate(UUID doctorId) {
+        QueueStateDto state = getQueueState(doctorId);
         messagingTemplate.convertAndSend("/topic/queue/" + doctorId, state);
     }
 
@@ -49,6 +52,7 @@ public class NotificationService {
                 .id(entry.getId())
                 .appointmentId(entry.getAppointment().getId())
                 .patientId(entry.getPatient().getId())
+                .patientName(entry.getPatient() != null ? entry.getPatient().getFullName() : null)
                 .position(entry.getPosition())
                 .status(entry.getStatus())
                 .build();

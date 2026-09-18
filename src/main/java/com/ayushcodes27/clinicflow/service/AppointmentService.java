@@ -105,4 +105,11 @@ public class AppointmentService {
         appointment.setStatus("CANCELLED");
         appointmentRepo.save(appointment);
     }
+
+    public java.util.List<Appointment> getAppointments(String status) {
+        if (status != null && !status.isEmpty()) {
+            return appointmentRepo.findByStatus(status);
+        }
+        return appointmentRepo.findAll();
+    }
 }
