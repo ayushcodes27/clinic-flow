@@ -17,4 +17,6 @@ public class QueueStateDto {
     private QueueEntryDto currentPatient;
     private int waitingCount;
     private List<QueueEntryDto> queue;
+    private Integer avgConsultationMinutes;
+    private Integer totalEstimatedWaitMinutes;
 }

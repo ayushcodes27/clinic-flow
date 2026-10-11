@@ -22,5 +22,18 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
     """, nativeQuery = true)
     List<Appointment> findNoShowCandidates(@Param("status") String status, @Param("cutoff") Instant cutoff);
 
+    @Query(value = """
+        SELECT a.* FROM appointments a
+        JOIN appointment_slots s ON a.slot_id = s.id
+        WHERE a.status = 'BOOKED'
+        AND a.reminder_sent = false
+        AND (s.slot_date + s.start_time) >= :fromTime
+        AND (s.slot_date + s.start_time) <= :toTime
+    """, nativeQuery = true)
+    List<Appointment> findUpcomingAppointmentsNeedingReminder(
+            @Param("fromTime") Instant fromTime,
+            @Param("toTime") Instant toTime
+    );
+
     List<Appointment> findByStatus(String status);
 }

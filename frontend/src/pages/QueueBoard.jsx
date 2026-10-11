@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Users, Volume2, UserCheck, Stethoscope, Bell, Sparkles } from 'lucide-react';
+import { Users, Volume2, UserCheck, Stethoscope, Bell, Sparkles, Clock } from 'lucide-react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import api from '../api';
@@ -55,10 +55,12 @@ function QueueBoard() {
         doctorId: id,
         currentPatient: data?.currentPatient || null,
         waitingCount: data?.waitingCount !== undefined ? data?.waitingCount : waitingList.length,
-        queue: waitingList
+        queue: waitingList,
+        avgConsultationMinutes: data?.avgConsultationMinutes || 15,
+        totalEstimatedWaitMinutes: data?.totalEstimatedWaitMinutes || 0
       });
     } catch (_err) {
-      setQueueState({ doctorId: id, currentPatient: null, waitingCount: 0, queue: [] });
+      setQueueState({ doctorId: id, currentPatient: null, waitingCount: 0, queue: [], avgConsultationMinutes: 15, totalEstimatedWaitMinutes: 0 });
     }
   }, [doctorId]);
 
@@ -83,7 +85,9 @@ function QueueBoard() {
                 doctorId,
                 currentPatient: state?.currentPatient || null,
                 waitingCount: state?.waitingCount !== undefined ? state?.waitingCount : waitingList.length,
-                queue: waitingList
+                queue: waitingList,
+                avgConsultationMinutes: state?.avgConsultationMinutes || 15,
+                totalEstimatedWaitMinutes: state?.totalEstimatedWaitMinutes || 0
               });
               setHighlightPulse(true);
               setAudioChimeAlert(true);
@@ -210,6 +214,17 @@ function QueueBoard() {
             ) : patientQueueEntry ? (
               <span>
                 You&apos;re <strong>#{patientQueueEntry.position || (patientQueueIndex + 1)}</strong> in line ({patientQueueIndex === 0 ? 'next' : `${patientQueueIndex} ahead of you`}).
+                {patientQueueEntry.estimatedWaitMinutes !== undefined && patientQueueEntry.estimatedWaitMinutes !== null && (
+                  <span style={{ marginLeft: '0.6rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: '#0369a1', fontWeight: 600 }}>
+                    <Clock size={15} style={{ verticalAlign: 'text-bottom' }} />
+                    Est. Wait: ~{patientQueueEntry.estimatedWaitMinutes} mins
+                    {patientQueueEntry.estimatedStartTime && (
+                      <span style={{ fontWeight: 500, color: '#0284c7' }}>
+                        (~{new Date(patientQueueEntry.estimatedStartTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})
+                      </span>
+                    )}
+                  </span>
+                )}
               </span>
             ) : (
               <span>You are not currently in this doctor&apos;s queue. Book an appointment or check in at the desk.</span>
@@ -322,6 +337,12 @@ function QueueBoard() {
               <Users size={16} color="#0284c7" />
               Waiting list ({waitingPatients.length})
             </h3>
+            {queueState?.avgConsultationMinutes && (
+              <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.3rem', background: '#f8fafc', padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
+                <Clock size={12} color="#0284c7" />
+                ~{queueState.avgConsultationMinutes} min/patient
+              </span>
+            )}
           </div>
 
           {waitingPatients.length === 0 ? (
@@ -383,14 +404,32 @@ function QueueBoard() {
                             </span>
                           )}
                         </div>
-                        <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.1rem' }}>
-                          Waiting
+                        <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.1rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                          <span>Waiting</span>
+                          {entry.estimatedWaitMinutes !== undefined && entry.estimatedWaitMinutes !== null && (
+                            <span style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.2rem',
+                              color: entry.estimatedWaitMinutes <= 15 ? '#059669' : '#0284c7',
+                              fontWeight: 600
+                            }}>
+                              • ~{entry.estimatedWaitMinutes}m wait
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
-                    <span className="badge" style={{ background: '#f1f5f9', color: '#475569', fontSize: '0.75rem' }}>
-                      {index === 0 ? 'Next' : `${index} ahead`}
-                    </span>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem' }}>
+                      <span className="badge" style={{ background: '#f1f5f9', color: '#475569', fontSize: '0.75rem' }}>
+                        {index === 0 ? 'Next' : `${index} ahead`}
+                      </span>
+                      {entry.estimatedStartTime && (
+                        <span style={{ fontSize: '0.7rem', color: '#64748b' }}>
+                          Est. {new Date(entry.estimatedStartTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      )}
+                    </div>
                   </li>
                 );
               })}

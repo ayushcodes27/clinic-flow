@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Data
@@ -18,4 +19,6 @@ public class QueueEntryDto {
     private String patientName;
     private int position;
     private String status;
+    private Integer estimatedWaitMinutes;
+    private Instant estimatedStartTime;
 }

@@ -45,6 +45,10 @@ public class Appointment {
 
     private String notes;
 
+    @Column(name = "reminder_sent", nullable = false)
+    @Builder.Default
+    private boolean reminderSent = false;
+
     @Column(name = "checked_in_at")
     private Instant checkedInAt;
 
