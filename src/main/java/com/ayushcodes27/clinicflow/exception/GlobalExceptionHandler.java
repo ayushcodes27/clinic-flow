@@ -11,8 +11,8 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
-    public ResponseEntity<Map<String, Object>> handleOptimisticLockingFailure(ObjectOptimisticLockingFailureException ex, jakarta.servlet.http.HttpServletRequest request) {
+    @ExceptionHandler({ObjectOptimisticLockingFailureException.class, SlotConflictException.class})
+    public ResponseEntity<Map<String, Object>> handleOptimisticLockingFailure(Exception ex, jakarta.servlet.http.HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of(
                         "timestamp", java.time.Instant.now().toString(),

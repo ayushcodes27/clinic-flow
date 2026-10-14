@@ -45,9 +45,6 @@ public class BookingConcurrencyTest {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add("spring.flyway.url", postgres::getJdbcUrl);
-        registry.add("spring.flyway.user", postgres::getUsername);
-        registry.add("spring.flyway.password", postgres::getPassword);
         
         registry.add("spring.data.redis.host", redis::getHost);
         registry.add("spring.data.redis.port", redis::getFirstMappedPort);

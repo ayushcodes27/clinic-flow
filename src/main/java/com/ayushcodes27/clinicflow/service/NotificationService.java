@@ -79,6 +79,14 @@ public class NotificationService {
         messagingTemplate.convertAndSend("/topic/queue/" + doctorId, state);
     }
 
+    
+    public void pushSlotBooked(UUID doctorId, UUID slotId) {
+        messagingTemplate.convertAndSend("/topic/slots/" + doctorId, java.util.Map.of(
+            "slotId", slotId.toString(),
+            "status", "BOOKED"
+        ));
+    }
+
     public void pushUserNotification(UUID userId, String message) {
         messagingTemplate.convertAndSendToUser(
                 userId.toString(),

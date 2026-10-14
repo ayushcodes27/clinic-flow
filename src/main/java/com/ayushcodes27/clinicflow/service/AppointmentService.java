@@ -1,6 +1,7 @@
 package com.ayushcodes27.clinicflow.service;
 
 import com.ayushcodes27.clinicflow.dto.BookAppointmentRequest;
+import com.ayushcodes27.clinicflow.exception.SlotConflictException;
 import com.ayushcodes27.clinicflow.entity.Appointment;
 import com.ayushcodes27.clinicflow.entity.AppointmentSlot;
 import com.ayushcodes27.clinicflow.entity.User;
@@ -35,13 +36,14 @@ public class AppointmentService {
 
         AppointmentSlot slot = slotRepo.findById(request.getSlotId()).orElseThrow();
         if (!"AVAILABLE".equals(slot.getStatus())) {
-            throw new RuntimeException("Slot is not available");
+            throw new SlotConflictException("This slot was just booked by another patient. Please select a different slot.");
         }
 
         slot.setStatus("BOOKED");
         slotRepo.save(slot); // This triggers optimistic locking check on flush
         
         slotService.evictCache(slot.getDoctorId(), slot.getSlotDate());
+        notificationService.pushSlotBooked(slot.getDoctorId(), slot.getId());
 
         String bookingRef = "CF-" + slot.getSlotDate().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
 
