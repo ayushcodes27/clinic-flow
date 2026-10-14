@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Calendar, UserX, CheckCircle2 } from 'lucide-react';
+import { Calendar, UserX, CheckCircle2, RotateCcw } from 'lucide-react';
 import api from '../api';
+import { mockBackend } from '../mockData';
 import { formatDateTime, STATUS_LABELS } from '../utils';
 
 const FILTER_TABS = [
@@ -41,12 +42,73 @@ function NoShows() {
   const completedCount = allAppointments.filter(a => a.status === 'COMPLETED').length;
 
   // Filtered appointments displayed in table
+    const [resetting, setResetting] = useState(false);
+  const [resetNotice, setResetNotice] = useState('');
+
+  const handleResetDemo = () => {
+    if (!window.confirm('Reset demo data back to clean initial state?')) return;
+    setResetting(true);
+    try {
+      mockBackend.resetDemo();
+      setResetNotice('Demo clinic data has been reset to initial state.');
+      fetchAppointments();
+      setTimeout(() => setResetNotice(''), 4000);
+    } finally {
+      setResetting(false);
+    }
+  };
+
   const displayedAppointments = filterStatus === 'ALL'
     ? allAppointments
     : allAppointments.filter(a => a.status === filterStatus);
 
   return (
     <div>
+            {/* Admin Demo Controls Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.25rem' }}>
+        <div>
+          <span style={{ fontSize: '0.825rem', color: '#64748b' }}>
+            Audits & no-show sweeps run every 5 minutes. Destructive changes are protected in demo mode.
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={handleResetDemo}
+          disabled={resetting}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            padding: '0.45rem 0.85rem',
+            fontSize: '0.8rem',
+            fontWeight: 600,
+            borderRadius: '6px',
+            border: '1px solid #cbd5e1',
+            background: '#ffffff',
+            color: '#0f172a',
+            cursor: resetting ? 'not-allowed' : 'pointer'
+          }}
+        >
+          <RotateCcw size={14} color="#0d9488" style={{ animation: resetting ? 'spin 1s linear infinite' : 'none' }} />
+          <span>{resetting ? 'Resetting...' : 'Reset demo data'}</span>
+        </button>
+      </div>
+
+      {resetNotice && (
+        <div style={{
+          padding: '0.65rem 0.85rem',
+          borderRadius: '6px',
+          background: '#f0fdfa',
+          color: '#0f766e',
+          border: '1px solid #ccfbf1',
+          fontSize: '0.825rem',
+          fontWeight: 500,
+          marginBottom: '1rem'
+        }}>
+          {resetNotice}
+        </div>
+      )}
+
       {/* Stat Metric Cards (no border-l-4 colored tell, clean 1px borders) */}
       <div className="grid-3" style={{ marginBottom: '1.25rem' }}>
         <div className="card" style={{ padding: '1.25rem', marginBottom: 0 }}>

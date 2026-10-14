@@ -50,7 +50,7 @@ export const maskPatientName = (fullName) => {
 
 export const STATUS_LABELS = {
   ALL: 'All',
-  NO_SHOW: 'No-shows',
+  NO_SHOW: 'No-show',
   BOOKED: 'Booked',
   CHECKED_IN: 'Checked in',
   WAITING: 'Waiting',

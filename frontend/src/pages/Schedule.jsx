@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import { Plus, Clock, Calendar } from 'lucide-react';
 import api from '../api';
 import { formatIndianDate } from '../utils';
+import { TODAY_STR, TOMORROW_STR } from '../mockData';
 
 const DAYS = [
   { id: 1, name: 'Monday' },
@@ -29,8 +30,8 @@ function Schedule() {
 
   // Slot Generator Form
   const [slotGen, setSlotGen] = useState({
-    startDate: '2026-09-18',
-    endDate: '2026-09-25'
+    startDate: TODAY_STR,
+    endDate: TOMORROW_STR
   });
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -86,7 +87,7 @@ function Schedule() {
         endDate: slotGen.endDate
       });
       const count = res.data?.generatedCount || 96;
-      const rangeText = `${formatIndianDate(slotGen.startDate)}–${formatIndianDate(slotGen.endDate)}`;
+      const rangeText = `${formatIndianDate(slotGen.startDate)} — ${formatIndianDate(slotGen.endDate)}`;
       setMsg({
         type: 'success',
         text: `Generated ${count} slots for ${rangeText}.`
@@ -100,7 +101,7 @@ function Schedule() {
 
   return (
     <div>
-      {/* Doctor Selector Header (no duplicate hero card) */}
+      {/* Header Selector */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -109,7 +110,7 @@ function Schedule() {
         gap: '1rem',
         marginBottom: '1.25rem'
       }}>
-        <span style={{ fontSize: '0.875rem', color: '#64748b' }}>
+        <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
           Manage doctor shifts and bookable capacity.
         </span>
 
@@ -120,7 +121,14 @@ function Schedule() {
           <select
             value={selectedDoctor}
             onChange={e => setSelectedDoctor(e.target.value)}
-            style={{ marginBottom: 0, padding: '0.45rem 0.75rem', fontSize: '0.875rem', minWidth: '220px' }}
+            style={{
+              padding: '0.45rem 0.75rem',
+              fontSize: '0.85rem',
+              borderRadius: '6px',
+              border: '1px solid #cbd5e1',
+              background: '#ffffff',
+              minWidth: '220px'
+            }}
           >
             {doctors.map(d => (
               <option key={d.id} value={d.id}>
@@ -133,11 +141,11 @@ function Schedule() {
 
       {msg && (
         <div style={{
-          padding: '0.75rem 1rem',
-          borderRadius: '8px',
+          padding: '0.65rem 0.85rem',
+          borderRadius: '6px',
           marginBottom: '1.25rem',
           fontWeight: 600,
-          fontSize: '0.875rem',
+          fontSize: '0.825rem',
           background: msg.type === 'success' ? '#f0fdf4' : '#fef2f2',
           color: msg.type === 'success' ? '#166534' : '#991b1b',
           border: `1px solid ${msg.type === 'success' ? '#bbf7d0' : '#fecaca'}`
@@ -148,10 +156,10 @@ function Schedule() {
 
       <div className="grid-2">
         {/* Weekly Schedule Overview */}
-        <div className="card">
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem' }}>
+        <div className="card" style={{ padding: '1.25rem' }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '1rem' }}>
             Weekly hours
-          </h3>
+          </div>
 
           {schedules.length === 0 ? (
             <div style={{
@@ -159,7 +167,7 @@ function Schedule() {
               padding: '2.5rem 1.5rem',
               color: '#64748b',
               background: '#f8fafc',
-              borderRadius: '8px',
+              borderRadius: '6px',
               border: '1px dashed #cbd5e1'
             }}>
               <Calendar size={28} color="#94a3b8" style={{ marginBottom: '0.5rem' }} />
@@ -188,7 +196,7 @@ function Schedule() {
                         </td>
                         <td>
                           <span style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600, color: '#0f172a' }}>
-                            {sch.startTime} – {sch.endTime}
+                            {sch.startTime} — {sch.endTime}
                           </span>
                         </td>
                         <td>
@@ -206,76 +214,92 @@ function Schedule() {
 
           {/* Add New Schedule Block */}
           <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid #e2e8f0' }}>
-            <h4 style={{ fontSize: '0.925rem', fontWeight: 700, marginBottom: '0.85rem' }}>
+            <h4 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '0.85rem' }}>
               Add weekly shift
             </h4>
-            <form onSubmit={handleCreateSchedule}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label>Day of week</label>
-                  <select
-                    value={newSchedule.dayOfWeek}
-                    onChange={e => setNewSchedule({ ...newSchedule, dayOfWeek: parseInt(e.target.value, 10) })}
-                  >
-                    {DAYS.map(day => (
-                      <option key={day.id} value={day.id}>{day.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label>Duration (mins)</label>
-                  <input
-                    type="number"
-                    value={newSchedule.consultationDurationMinutes}
-                    onChange={e => setNewSchedule({ ...newSchedule, consultationDurationMinutes: parseInt(e.target.value, 10) })}
-                    min="5"
-                    max="120"
-                    required
-                  />
-                </div>
+            <form onSubmit={handleCreateSchedule} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+              <div className="form-group" style={{ gridColumn: 'span 2', marginBottom: 0 }}>
+                <label>Day of week</label>
+                <select
+                  value={newSchedule.dayOfWeek}
+                  onChange={e => setNewSchedule({ ...newSchedule, dayOfWeek: parseInt(e.target.value, 10) })}
+                >
+                  {DAYS.map(d => (
+                    <option key={d.id} value={d.id}>{d.name}</option>
+                  ))}
+                </select>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label>Start time</label>
-                  <input
-                    type="time"
-                    value={newSchedule.startTime}
-                    onChange={e => setNewSchedule({ ...newSchedule, startTime: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label>End time</label>
-                  <input
-                    type="time"
-                    value={newSchedule.endTime}
-                    onChange={e => setNewSchedule({ ...newSchedule, endTime: e.target.value })}
-                    required
-                  />
-                </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label>Start time</label>
+                <input
+                  type="time"
+                  value={newSchedule.startTime}
+                  onChange={e => setNewSchedule({ ...newSchedule, startTime: e.target.value })}
+                  required
+                />
               </div>
 
-              <button type="submit" style={{ width: '100%' }}>
-                <Plus size={15} /> Save weekly shift
-              </button>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label>End time</label>
+                <input
+                  type="time"
+                  value={newSchedule.endTime}
+                  onChange={e => setNewSchedule({ ...newSchedule, endTime: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="form-group" style={{ gridColumn: 'span 2', marginBottom: 0 }}>
+                <label>Consultation duration</label>
+                <select
+                  value={newSchedule.consultationDurationMinutes}
+                  onChange={e => setNewSchedule({ ...newSchedule, consultationDurationMinutes: parseInt(e.target.value, 10) })}
+                >
+                  <option value={10}>10 minutes</option>
+                  <option value={15}>15 minutes</option>
+                  <option value={20}>20 minutes</option>
+                  <option value={30}>30 minutes</option>
+                </select>
+              </div>
+
+              <div style={{ gridColumn: 'span 2', marginTop: '0.5rem' }}>
+                <button
+                  type="submit"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.45rem',
+                    padding: '0.55rem 0.85rem',
+                    fontSize: '0.825rem',
+                    fontWeight: 600,
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: '#0f172a',
+                    color: '#ffffff',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Plus size={15} />
+                  <span>Save shift block</span>
+                </button>
+              </div>
             </form>
           </div>
         </div>
 
         {/* Generate Slots Card */}
-        <div className="card">
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.35rem' }}>
-            Slot generator
-          </h3>
-          <p style={{ fontSize: '0.825rem', color: '#64748b', marginBottom: '1.25rem' }}>
-            Create bookable slots for the selected dates.
+        <div className="card" style={{ padding: '1.25rem' }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '1rem' }}>
+            Automated slot engine
+          </div>
+
+          <p style={{ fontSize: '0.825rem', color: '#475569', marginBottom: '1.25rem', lineHeight: 1.5 }}>
+            Generate bookable appointment slots across this doctor&apos;s shift hours. Existing bookings will not be overwritten.
           </p>
 
-          <form onSubmit={handleGenerateSlots}>
-            <div className="form-group">
+          <form onSubmit={handleGenerateSlots} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+            <div className="form-group" style={{ marginBottom: 0 }}>
               <label>Start date</label>
               <input
                 type="date"
@@ -285,7 +309,7 @@ function Schedule() {
               />
             </div>
 
-            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+            <div className="form-group" style={{ marginBottom: 0 }}>
               <label>End date</label>
               <input
                 type="date"
@@ -299,13 +323,23 @@ function Schedule() {
               type="submit"
               disabled={isGenerating}
               style={{
-                width: '100%',
-                padding: '0.75rem',
-                fontSize: '0.925rem'
+                marginTop: '0.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.45rem',
+                padding: '0.65rem 1rem',
+                fontSize: '0.825rem',
+                fontWeight: 600,
+                borderRadius: '6px',
+                border: 'none',
+                background: '#0f172a',
+                color: '#ffffff',
+                cursor: isGenerating ? 'not-allowed' : 'pointer'
               }}
             >
-              <Clock size={16} />
-              {isGenerating ? 'Generating slots...' : 'Generate booking slots'}
+              <Clock size={15} />
+              <span>{isGenerating ? 'Generating slots...' : 'Generate daily slots'}</span>
             </button>
           </form>
         </div>
