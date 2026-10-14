@@ -26,7 +26,8 @@ function QueueBoard() {
   const [statusMsg, setStatusMsg] = useState(null);
   const [isCalling, setIsCalling] = useState(false);
 
-  const userType = localStorage.getItem('userType') || 'PATIENT';
+  const queryRole = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('role') : null;
+  const userType = queryRole || localStorage.getItem('userType') || 'PATIENT';
   const currentUserId = localStorage.getItem('userId') || 'p-sandeep-kulkarni';
   const currentFullName = localStorage.getItem('fullName') || 'Sandeep Kulkarni';
 

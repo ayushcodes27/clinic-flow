@@ -28,7 +28,8 @@ export const NAV = [
 ];
 
 function ProtectedRoute({ children }) {
-  const token = localStorage.getItem('token');
+  const queryRole = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('role') : null;
+  const token = localStorage.getItem('token') || (queryRole ? 'mock-jwt-token-' + queryRole.toLowerCase() : null);
   if (!token) {
     return <Navigate to="/login" replace />;
   }
@@ -36,7 +37,8 @@ function ProtectedRoute({ children }) {
 }
 
 function RequireRole({ roles, children }) {
-  const userType = localStorage.getItem('userType') || 'PATIENT';
+  const queryRole = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('role') : null;
+  const userType = queryRole || localStorage.getItem('userType') || 'PATIENT';
   if (!roles.includes(userType)) {
     const allowed = NAV.find(n => n.roles.includes(userType));
     return <Navigate to={allowed ? allowed.to : "/queue"} replace />;
@@ -472,10 +474,33 @@ function App() {
   const [, setRoleState] = useState(localStorage.getItem('userType'));
 
   useEffect(() => {
-    if (!localStorage.getItem('fullName')) {
+    const params = new URLSearchParams(window.location.search);
+    const roleParam = params.get('role');
+    if (roleParam && ['DOCTOR', 'RECEPTIONIST', 'PATIENT', 'ADMIN'].includes(roleParam)) {
+      localStorage.setItem('userType', roleParam);
+      setRoleState(roleParam);
+      if (roleParam === 'DOCTOR') {
+        localStorage.setItem('fullName', 'Dr. Rajesh Sharma');
+        localStorage.setItem('token', 'mock-jwt-token-doc');
+        localStorage.setItem('userId', 'd1111111-1111-1111-1111-111111111111');
+      } else if (roleParam === 'RECEPTIONIST') {
+        localStorage.setItem('fullName', 'Meera Pillai');
+        localStorage.setItem('token', 'mock-jwt-token-rec');
+        localStorage.setItem('userId', 'r1111111-1111-1111-1111-111111111111');
+      } else if (roleParam === 'ADMIN') {
+        localStorage.setItem('fullName', 'Suresh Menon');
+        localStorage.setItem('token', 'mock-jwt-token-adm');
+        localStorage.setItem('userId', 'a1111111-1111-1111-1111-111111111111');
+      } else {
+        localStorage.setItem('fullName', 'Sandeep Kulkarni');
+        localStorage.setItem('token', 'mock-jwt-token-pat');
+        localStorage.setItem('userId', 'p-sandeep-kulkarni');
+      }
+    } else if (!localStorage.getItem('fullName')) {
       localStorage.setItem('fullName', 'Sandeep Kulkarni');
       localStorage.setItem('userType', 'PATIENT');
       localStorage.setItem('userId', 'p-sandeep-kulkarni');
+      localStorage.setItem('token', 'mock-jwt-token-pat');
     }
   }, []);
 
