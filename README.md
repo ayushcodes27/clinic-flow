@@ -13,8 +13,7 @@ ClinicFlow is built as a containerized, decoupled architecture across five core 
 - **API Gateway & Controller**: **Spring Boot 3.3** gateway featuring stateless JWT authentication, fine-grained Role-Based Access Control (**ADMIN, DOCTOR, RECEPTIONIST, PATIENT**), CORS, and standardized error handling.
 - **Orchestration & Concurrency Engine**: Automated daily slot generation, optimistic concurrency control to prevent double-booking, and a real-time queue state machine (`WAITING` -> `CALLED` -> `IN_CONSULTATION` -> `COMPLETED`) with dynamic position and ETA calculations.
 - **Real-Time & Automation Services**: **WebSocket (STOMP)** message broker broadcasting instant queue movements, accompanied by **ShedLock**-coordinated distributed monitors (`NoShowMonitorJob`) sweeping missed appointments.
-- **Persistence & Cache Layer**: **PostgreSQL 15** with Flyway versioned migrations for transactional consistency, paired with **Redis 7** for fast lock coordination and queue state caching.
-
+- **Persistence & Cache Layer**: **PostgreSQL 15** with Spring Data JPA / Hibernate for transactional consistency and schema management, paired with **Redis 7** for fast lock coordination and queue state caching.
 ---
 
 ## Features
@@ -54,7 +53,7 @@ ClinicFlow is built as a containerized, decoupled architecture across five core 
 ## Technology Stack
 
 - **Backend**: Java 21, Spring Boot 3.3.4, Spring Data JPA, Spring Security, Spring WebSocket (STOMP)
-- **Database & Migrations**: PostgreSQL 15, Flyway
+- **Database**: PostgreSQL 15 (managed via Spring Data JPA / Hibernate)
 - **Distributed Caching & Locks**: Redis 7, ShedLock (Spring integration)
 - **Frontend**: React 18, Vite, Tailwind CSS, SockJS & StompJS, Axios
 - **Containerization & CI/CD**: Docker, Docker Compose, Multi-stage Dockerfile
