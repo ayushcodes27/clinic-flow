@@ -33,18 +33,18 @@ ClinicFlow is built as a decoupled, multi-tier system with distributed state syn
 ### 1. Authentication & Onboarding
 *Deel-inspired split layout with soft medical teal gradient, floating live queue pill highlights, and one-click demo role presets.*
 
-| Split-Screen Sign-In & Demo Switcher |
+| Split-Screen Sign-In & Demo Role Switcher |
 | :---: |
 | ![ClinicFlow Login](frontend/ss/login.png) |
 
 ---
 
 ### 2. Doctor Consultation Desk
-*Zero-friction consultation workflow featuring quick-glance vitals (BP, Heart Rate, Last Visited, Allergies), chief complaint callout, glowing primary action button, and smooth gliding queue rows.*
+*High-efficiency consultation desk featuring quick-glance patient vitals (BP, Heart Rate, Last Visited, Allergies), chief complaint callout, glowing primary action button, and smooth gliding queue rows.*
 
-| Consultation Vitals Card & Live Queue | Doctor Schedule & Availability Management |
-| :---: | :---: |
-| ![Doctor Desk](frontend/ss/doctor1.png) | ![Doctor Schedules](frontend/ss/doctor2.png) |
+| Consultation Vitals Card & Live Queue |
+| :---: |
+| ![Doctor Consultation Desk](frontend/ss/doctor1.png) |
 
 ---
 
@@ -57,21 +57,21 @@ ClinicFlow is built as a decoupled, multi-tier system with distributed state syn
 
 ---
 
-### 4. Patient Portal: Live Token & Appointment Booking
+### 4. Patient Portal: Live Token & Status Tracker
 *Reassuring large token indicator (`#02`) with a 3-step visual progress bar (`Checked In` $\rightarrow$ `Waiting` $\rightarrow$ `In Consultation`), plus interactive slot selection with confirmation modal.*
 
-| Real-Time Token Tracker | Interactive Slot Booking & Confirmation |
-| :---: | :---: |
-| ![Patient Queue Tracker](frontend/ss/patient1.png) | ![Interactive Slot Booking](frontend/ss/patient2.png) |
+| Real-Time Patient Queue & Token Tracker |
+| :---: |
+| ![Patient Portal](frontend/ss/patient.png) |
 
 ---
 
 ### 5. Clinic Operations & Administration
-*Admin KPI metrics with positive/negative trend indicators, live patient count badges across doctor tabs, and automated ShedLock no-show auditing.*
+*Admin KPI metrics with positive/negative trend indicators, live patient count badges across doctor tabs, schedule management, and automated ShedLock no-show auditing.*
 
-| Admin Queue & Doctor Capacity Overview | Automated No-Shows & Cluster Audit |
-| :---: | :---: |
-| ![Admin Clinic Management](frontend/ss/admin1.png) | ![Admin No-Shows Dashboard](frontend/ss/admin2.png) |
+| Admin Queue & Clinic Operations Overview |
+| :---: |
+| ![Admin Dashboard](frontend/ss/admin.png) |
 
 ---
 
