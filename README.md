@@ -6,159 +6,121 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
 
-**ClinicFlow** is an enterprise-grade outpatient clinic management platform engineered to resolve real-time queue congestion, eliminate double-booking race conditions, and streamline clinical operations across Patients, Doctors, Receptionists, and Administrators.
+ClinicFlow is a clinic appointment and queue management web app built with Spring Boot and React. It helps manage patient queues in real time, handles appointment booking without double-booking, and provides simple views for patients, doctors, receptionists, and admins.
 
-👉 **Try the Live Application:** [https://clinicflow-live.vercel.app](https://clinicflow-live.vercel.app) *(Includes one-click demo role switching for instant testing)*
+👉 **Live Demo:** [https://clinicflow-live.vercel.app](https://clinicflow-live.vercel.app) *(Includes one-click demo login buttons for each role)*
 
 ---
 
-## System Architecture
+## Architecture
 
 ![ClinicFlow Architecture](frontend/ss/clinic_flow_archi.png)
 
-ClinicFlow is built as a decoupled, multi-tier system with distributed state synchronization:
-
-- **Presentation Layer (React 18 + Vite)**: Single-Page Application utilizing Framer Motion for 150ms state transitions, tactile micro-interactions, skeleton shimmer loaders, and responsive side drawers.
-- **API Gateway & Security (Spring Boot 3.3)**: Stateless JWT authentication with fine-grained Role-Based Access Control (**DOCTOR, RECEPTIONIST, PATIENT, ADMIN**), unified exception mapping (`409 Conflict`, `400 Bad Request`), and production CORS filter policies.
-- **Orchestration & Concurrency Control**:
-  - **Optimistic Locking (`@Version`) + State Validation**: Guaranteed slot double-booking prevention returning clean `409 Conflict` under high concurrency.
-  - **Redis Cache Invalidation & STOMP Broadcast**: Instant cache eviction on slot booking paired with WebSocket push notifications (`/topic/slots/{doctorId}` and `/topic/queue/{doctorId}`).
-- **Distributed Scheduling (ShedLock)**: Horizontal cluster-safe background jobs (`NoShowMonitorJob`) sweeping expired slots and marking no-shows without duplicate task execution.
-- **Data & Persistence**: **PostgreSQL 15** transactional storage managed via Spring Data JPA / Hibernate alongside **Redis 7** for rapid queue caching and distributed synchronization.
+- **Frontend (React + Vite)**: Simple dashboard with views tailored to each role, smooth state transitions, and responsive layouts.
+- **Backend (Spring Boot 3)**: REST API with stateless JWT authentication and role-based access (**DOCTOR, RECEPTIONIST, PATIENT, ADMIN**).
+- **Real-Time Updates**: WebSocket (STOMP) for pushing live queue updates when patients are called or checked in.
+- **Double-Booking Protection**: Database-level optimistic locking (`@Version`) and status checks so a time slot cannot be booked twice simultaneously (returns HTTP 409 Conflict).
+- **Database & Cache**: PostgreSQL for persistent data and Redis for slot caching and lock coordination.
 
 ---
 
-## UI & Clinical Workflows
+## Screenshots
 
-### 1. Authentication & Onboarding
-*Deel-inspired split layout with soft medical teal gradient, floating live queue pill highlights, and one-click demo role presets.*
+### 1. Sign In
+*Simple login screen with one-click demo buttons to try each role without typing.*
 
-| Split-Screen Sign-In & Demo Role Switcher |
+| Sign In & Demo Role Switcher |
 | :---: |
 | ![ClinicFlow Login](frontend/ss/login.png) |
 
 ---
 
-### 2. Doctor Consultation Desk
-*High-efficiency consultation desk featuring quick-glance patient vitals (BP, Heart Rate, Last Visited, Allergies), chief complaint callout, glowing primary action button, and smooth gliding queue rows.*
+### 2. Doctor Desk
+*View waiting patients, call the next patient, and see quick vitals and consultation reasons.*
 
-| Consultation Vitals Card & Live Queue |
+| Doctor Consultation Desk |
 | :---: |
 | ![Doctor Consultation Desk](frontend/ss/doctor1.png) |
 
 ---
 
-### 3. Receptionist Desk & Patient Check-In
-*Dual-tab operational desk separating Active Queue patients from Completed History, with real-time search, badge statuses, and an interactive slide-over patient profile drawer.*
+### 3. Reception Desk
+*Check in arriving patients, view active vs completed visits, and search by name or reference number.*
 
-| Active Check-In Desk & Side Drawer |
+| Reception Desk & Check-In |
 | :---: |
 | ![Receptionist Desk](frontend/ss/reception.png) |
 
 ---
 
-### 4. Patient Portal: Live Token & Status Tracker
-*Reassuring large token indicator (`#02`) with a 3-step visual progress bar (`Checked In` $\rightarrow$ `Waiting` $\rightarrow$ `In Consultation`), plus interactive slot selection with confirmation modal.*
+### 4. Patient Portal
+*Track live token number and wait status, or choose an open time slot to book an appointment.*
 
-| Real-Time Patient Queue & Token Tracker |
+| Patient Queue Tracker & Booking |
 | :---: |
 | ![Patient Portal](frontend/ss/patient.png) |
 
 ---
 
-### 5. Clinic Operations & Administration
-*Admin KPI metrics with positive/negative trend indicators, live patient count badges across doctor tabs, schedule management, and automated ShedLock no-show auditing.*
+### 5. Admin Dashboard
+*Overview of doctor schedules, patient counts, and queue statistics.*
 
-| Admin Queue & Clinic Operations Overview |
+| Admin Dashboard |
 | :---: |
 | ![Admin Dashboard](frontend/ss/admin.png) |
 
 ---
 
-## Key Engineering Highlights
+## Tech Stack
 
-### 1. Concurrency & Double-Booking Prevention
-In high-demand clinics, multiple patients often attempt to book the same prime time slot concurrently. ClinicFlow implements a defense-in-depth approach:
-1. **Pre-Save Status Validation**: `AppointmentService` confirms `slot.getStatus() == SlotStatus.AVAILABLE` before acquiring locks.
-2. **JPA Optimistic Locking (`@Version`)**: Detects conflicting parallel transactions and raises an `ObjectOptimisticLockingFailureException`.
-3. **HTTP 409 Conflict Handling**: `GlobalExceptionHandler` converts optimistic lock collisions and `SlotConflictException` into standardized `409 Conflict` payloads:
-```json
-{
-  "status": 409,
-  "error": "Conflict",
-  "message": "This slot was just booked by another patient. Please choose another time.",
-  "timestamp": "2026-10-14T21:45:00Z"
-}
-```
-4. **Instant Invalidation & Broadcast**: The Redis slot cache is immediately evicted via `slotService.evictCache(doctorId, date)` and pushed via WebSocket to all listening clients to gray out the slot in real time.
-
----
-
-### 2. Enterprise UI Polish & Tactile Transitions
-- **Framer Motion State Transitions**: Completed patients fade out and glide upward smoothly without visual snapping.
-- **Skeleton Shimmer Loaders**: Shimmering placeholder bars display during doctor tab switches and data loading, preventing jarring layout shifts.
-- **150ms Page Route Fades**: Sub-route navigation applies a subtle 150ms upward fade (`opacity-0` to `opacity-100`, `translate-y-1`).
-- **Tactile Micro-Interactions**: Subtle scale transitions (`scale(1.02)`) on hover and active depression (`scale(0.97)`) on click across all primary buttons.
-
----
-
-## Technology Stack
-
-| Layer | Technologies |
-| :--- | :--- |
-| **Backend** | Java 21, Spring Boot 3.3.4, Spring Data JPA, Spring Security, Spring WebSocket (STOMP), Lombok |
-| **Database & Cache** | PostgreSQL 15, Redis 7, ShedLock Distributed Lock Provider |
-| **Frontend** | React 18, Vite, Framer Motion, Tailwind CSS, Lucide Icons, SockJS & StompJS, Axios |
-| **Testing & CI/CD** | JUnit 5, Concurrency Executor Multi-Thread Tests, Docker, Multi-Stage Dockerfile |
-| **Cloud Hosting** | Vercel (Frontend Global CDN), Render / Railway (Spring Boot Container), Neon / Upstash |
+- **Backend**: Java 21, Spring Boot 3.3.4, Spring Data JPA, Spring Security, Spring WebSocket (STOMP)
+- **Database & Cache**: PostgreSQL 15, Redis 7, ShedLock
+- **Frontend**: React 18, Vite, Framer Motion, Tailwind CSS, Lucide Icons, Axios, SockJS / StompJS
+- **Deployment & Containers**: Docker, Docker Compose, Vercel
 
 ---
 
 ## Getting Started
 
-### Option 1: Run Full Containerized Stack (Docker Compose)
-Run the following command from the repository root:
+### Option 1: Run with Docker Compose
+From the project root:
 ```bash
 docker-compose up -d --build
 ```
 
-This starts:
-- **Frontend SPA**: `http://localhost:5173`
-- **Backend API**: `http://localhost:8081` (or `8080`)
-- **PostgreSQL**: `localhost:5432`
-- **Redis**: `localhost:6379`
+- **Frontend UI**: [http://localhost:5173](http://localhost:5173)
+- **Backend API**: [http://localhost:8081](http://localhost:8081)
+- **Swagger Docs**: [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
 
 ### Option 2: Run Locally for Development
 
-#### 1. Backend (Spring Boot 3)
+#### Backend (Spring Boot)
 ```bash
 mvn clean package -DskipTests
 java -jar target/clinicflow-0.0.1-SNAPSHOT.jar
 ```
-*Swagger API Docs:* [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 
-#### 2. Frontend (Vite + React)
+#### Frontend (Vite + React)
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-*Frontend Web UI:* [http://localhost:5173](http://localhost:5173)
 
 ---
 
-## Demo Credentials
+## Demo Accounts
 
-Click any preset on the Login screen, or use the following credentials:
+You can click any preset button on the sign-in page, or log in with:
 
-| Role | Email | Password | Primary Feature |
-| :--- | :--- | :--- | :--- |
-| **Doctor** | `doctor@clinicflow.com` | `doctor123` | Consultation desk, patient vitals, call next |
-| **Receptionist** | `receptionist@clinicflow.com` | `reception123` | Patient check-in desk, slide-over drawer |
-| **Patient** | `patient@clinicflow.com` | `patient123` | Live `#02` token progress, interactive slot booking |
-| **Admin** | `admin@clinicflow.com` | `admin123` | KPI trend metrics, schedule manager, no-show audit |
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Doctor** | `doctor@clinicflow.com` | `doctor123` |
+| **Receptionist** | `receptionist@clinicflow.com` | `reception123` |
+| **Patient** | `patient@clinicflow.com` | `patient123` |
+| **Admin** | `admin@clinicflow.com` | `admin123` |
 
 ---
 
 ## License
-MIT License. Built to demonstrate high-concurrency architecture and modern clinical workflow ergonomics.
+MIT
