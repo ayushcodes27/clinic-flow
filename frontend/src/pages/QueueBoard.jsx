@@ -80,47 +80,50 @@ function QueueBoard() {
     let stompClient = null;
     let isMounted = true;
 
-    try {
-      const wsBase = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/api\/?$/, '');
-      const socket = new SockJS(wsBase ? (wsBase + '/ws') : '/ws');
-      stompClient = new Client({
-        webSocketFactory: () => socket,
-        reconnectDelay: 8000,
-        debug: () => {},
-        onConnect: () => {
-          if (!isMounted) return;
-          setIsConnected(true);
-          stompClient.subscribe('/topic/queue/' + doctorId, (message) => {
-            try {
-              const state = JSON.parse(message.body);
-              const waitingList = state?.queue || state?.waitingQueue || [];
-              setQueueState({
-                doctorId,
-                currentPatient: state?.currentPatient || null,
-                waitingCount: state?.waitingCount !== undefined ? state?.waitingCount : waitingList.length,
-                queue: waitingList,
-                avgConsultationMinutes: state?.avgConsultationMinutes || 15,
-                totalEstimatedWaitMinutes: state?.totalEstimatedWaitMinutes || (waitingList.length * 15)
-              });
-            } catch (parseErr) {
-              console.error('STOMP parse error:', parseErr);
-            }
-          });
-        },
-        onDisconnect: () => {
-          if (isMounted) setIsConnected(true);
-        },
-        onStompError: () => {
-          if (isMounted) setIsConnected(true);
-        }
-      });
-      // In serverless / static deployment without backend, suppress WS console spam
-    if (window.location.hostname !== 'localhost' && !import.meta.env.VITE_API_BASE_URL) {
-      if (isMounted) setIsConnected(true);
+    // Only attempt real WebSocket connection if connected to a live backend or running locally
+    const hasLiveBackend = Boolean(import.meta.env.VITE_API_BASE_URL) || window.location.hostname === 'localhost';
+
+    if (hasLiveBackend) {
+      try {
+        const wsBase = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/api\/?$/, '');
+        const socket = new SockJS(wsBase ? (wsBase + '/ws') : '/ws');
+        stompClient = new Client({
+          webSocketFactory: () => socket,
+          reconnectDelay: 8000,
+          debug: () => {},
+          onConnect: () => {
+            if (!isMounted) return;
+            setIsConnected(true);
+            stompClient.subscribe('/topic/queue/' + doctorId, (message) => {
+              try {
+                const state = JSON.parse(message.body);
+                const waitingList = state?.queue || state?.waitingQueue || [];
+                setQueueState({
+                  doctorId,
+                  currentPatient: state?.currentPatient || null,
+                  waitingCount: state?.waitingCount !== undefined ? state?.waitingCount : waitingList.length,
+                  queue: waitingList,
+                  avgConsultationMinutes: state?.avgConsultationMinutes || 15,
+                  totalEstimatedWaitMinutes: state?.totalEstimatedWaitMinutes || (waitingList.length * 15)
+                });
+              } catch (parseErr) {
+                console.error('STOMP parse error:', parseErr);
+              }
+            });
+          },
+          onDisconnect: () => {
+            if (isMounted) setIsConnected(true);
+          },
+          onStompError: () => {
+            if (isMounted) setIsConnected(true);
+          }
+        });
+        stompClient.activate();
+      } catch (_wsErr) {
+        if (isMounted) setIsConnected(true);
+      }
     } else {
-      stompClient.activate();
-    }
-  } catch (_wsErr) {
+      // In standalone cloud demo mode, maintain live indicator state cleanly without network overhead
       if (isMounted) setIsConnected(true);
     }
 

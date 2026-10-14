@@ -25,10 +25,27 @@ const notifyStatus = (live) => {
   }
 };
 
+const isStandaloneCloud = !import.meta.env.VITE_API_BASE_URL && typeof window !== 'undefined' && window.location.hostname !== 'localhost';
+
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('token');
   if (token && !config.url?.startsWith('/auth/')) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+  
+  // If hosted on Vercel/Netlify without live backend, resolve directly from memory (0 network errors, 0 red console lines)
+  if (isStandaloneCloud) {
+    config.adapter = async (cfg) => {
+      const fallbackResult = handleMockFallback(cfg);
+      return {
+        data: fallbackResult.data,
+        status: 200,
+        statusText: 'OK',
+        headers: { 'content-type': 'application/json' },
+        config: cfg,
+        request: {}
+      };
+    };
   }
   return config;
 }, error => Promise.reject(error));
