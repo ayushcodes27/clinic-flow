@@ -38,8 +38,8 @@ function Schedule() {
   useEffect(() => {
     api.get('/doctors')
       .then(res => {
-        const list = res.data || [];
-        setDoctors(list);
+        const list = Array.isArray(res.data) ? res.data : [];
+        if (list.length > 0) setDoctors(list);
         if (list.length > 0) {
           setSelectedDoctor(list[0].id);
         }

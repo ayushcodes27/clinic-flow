@@ -11,7 +11,11 @@ function QueueBoard() {
   const navigate = useNavigate();
   const [doctorId, setDoctorId] = useState('d1111111-1111-1111-1111-111111111111');
   const [queueState, setQueueState] = useState(null);
-  const [doctors, setDoctors] = useState([]);
+  const [doctors, setDoctors] = useState([
+    { id: 'd1111111-1111-1111-1111-111111111111', name: 'Dr. Rajesh Sharma', specialization: 'Cardiology' },
+    { id: 'd2222222-2222-2222-2222-222222222222', name: 'Dr. Priya Patel', specialization: 'Dermatology' },
+    { id: 'd3333333-3333-3333-3333-333333333333', name: 'Dr. Vikram Mehta', specialization: 'Orthopedics' }
+  ]);
   const [isConnected, setIsConnected] = useState(true);
   const [bookedAppointments, setBookedAppointments] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,7 +32,7 @@ function QueueBoard() {
 
   const fetchBookedAppointments = useCallback(() => {
     api.get('/appointments')
-      .then(res => setBookedAppointments(res.data || []))
+      .then(res => setBookedAppointments(Array.isArray(res.data) ? res.data : []))
       .catch(console.error);
   }, []);
 
@@ -55,8 +59,8 @@ function QueueBoard() {
   useEffect(() => {
     api.get('/doctors')
       .then(res => {
-        const docList = res.data || [];
-        setDoctors(docList);
+        const docList = Array.isArray(res.data) ? res.data : [];
+        if (docList.length > 0) setDoctors(docList);
         if (docList.length > 0 && !doctorId) {
           setDoctorId(docList[0].id);
         }
@@ -110,8 +114,13 @@ function QueueBoard() {
           if (isMounted) setIsConnected(true);
         }
       });
+      // In serverless / static deployment without backend, suppress WS console spam
+    if (window.location.hostname !== 'localhost' && !import.meta.env.VITE_API_BASE_URL) {
+      if (isMounted) setIsConnected(true);
+    } else {
       stompClient.activate();
-    } catch (_wsErr) {
+    }
+  } catch (_wsErr) {
       if (isMounted) setIsConnected(true);
     }
 
@@ -180,12 +189,14 @@ function QueueBoard() {
     }
   };
 
-  const selectedDoctorObj = doctors.find(d => d.id === doctorId) || doctors[0];
+  const docArr = Array.isArray(doctors) ? doctors : [];
+  const selectedDoctorObj = docArr.find(d => d.id === doctorId) || docArr[0] || { name: 'Dr. Rajesh Sharma' };
   const waitingPatients = queueState?.queue || [];
   const currentServing = queueState?.currentPatient;
 
       // Quick clinical vitals helper for current consultation in Doctor view
-  const activeAppointment = bookedAppointments.find(a => 
+  const aptArr = Array.isArray(bookedAppointments) ? bookedAppointments : [];
+  const activeAppointment = aptArr.find(a => 
     a.id === currentServing?.appointmentId || 
     a.id === currentServing?.id || 
     a.bookingRef === currentServing?.bookingRef ||

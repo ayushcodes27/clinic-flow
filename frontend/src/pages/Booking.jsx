@@ -33,8 +33,8 @@ function Booking() {
   useEffect(() => {
     api.get('/doctors')
       .then(res => {
-        const docList = res.data || [];
-        setDoctors(docList);
+        const docList = Array.isArray(res.data) ? res.data : [];
+        if (docList.length > 0) setDoctors(docList);
         if (docList.length > 0) {
           setSelectedDoctor(docList[0].id);
         }
@@ -46,7 +46,7 @@ function Booking() {
 
   const fetchMyAppointments = () => {
     api.get('/appointments')
-      .then(res => setMyAppointments(res.data || []))
+      .then(res => setMyAppointments(Array.isArray(res.data) ? res.data : []))
       .catch(console.error);
   };
 
@@ -58,7 +58,8 @@ function Booking() {
       const rawSlots = res.data?.slots || res.data || [];
       setSlots(rawSlots);
 
-      const doc = doctors.find(d => d.id === selectedDoctor);
+      const docArr = Array.isArray(doctors) ? doctors : [];
+      const doc = docArr.find(d => d.id === selectedDoctor);
       const limit = doc?.maxDailyPatients || 20;
 
       const schedules = INITIAL_SCHEDULES[selectedDoctor] || [];
